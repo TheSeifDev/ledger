@@ -1,6 +1,93 @@
-# Architecture
+# ARCHITECTURE
 
-## 1. System
+```text
+┌──────────────────────────────────────────────┐
+│               PHANTOMS FINANCE               │
+├──────────────────────────────────────────────┤
+│                                              │
+│   ARCHITECTURE                               │
+│   Technical Foundation                       │
+│                                              │
+│   System · Layers · Multi-Tenancy            │
+│   Data Model · Finance Engine · Storage      │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+## 1. Final Architecture Decision
+
+```text
+┌──────────────────────────────────────────────┐
+│               PHANTOMS FINANCE               │
+├──────────────────────────────────────────────┤
+│                                              │
+│  Next.js + TypeScript                        │
+│       │                                      │
+│       ├── Server Components                  │
+│       ├── Server Actions                     │
+│       └── Route Handlers                     │
+│                    │                         │
+│                    ▼                         │
+│              Finance Domain                  │
+│                    │                         │
+│                    ▼                         │
+│                Drizzle ORM                   │
+│                    │                         │
+│                    ▼                         │
+│              Neon PostgreSQL                 │
+│                                              │
+│  Better Auth ───────────── Authentication    │
+│                                              │
+│  Cloudflare R2 ─────────── Evidence Files    │
+│                                              │
+│  Vercel ──────────────────── Deployment      │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+### Core Philosophy
+
+```text
+PostgreSQL = Financial Truth
+
+R2 = Files
+
+Next.js = Application
+
+Finance Domain = Business Rules
+
+Audit Log = Accountability
+
+Roles/Permissions = Security
+
+UI = Presentation
+```
+
+### Build Order
+
+```text
+Foundation
+    ↓
+Database
+    ↓
+Auth
+    ↓
+Projects
+    ↓
+Transactions
+    ↓
+Approval
+    ↓
+Finance Engine
+    ↓
+Audit
+    ↓
+Dashboard
+```
+
+Each phase is fully working before moving to the next.
+
+## 2. System
 
 Ledger is a Next.js full-stack application backed by Neon PostgreSQL.
 
@@ -21,34 +108,41 @@ Application / Domain Services
         ├── Permissions
         ├── Finance
         └── Storage
-        │
-        ▼
-Drizzle ORM
-        │
-        ▼
-Neon PostgreSQL
+              │
+              ▼
+        Drizzle ORM
+              │
+              ▼
+        Neon PostgreSQL
 
 Evidence:
 Application → Cloudflare R2
 ```
 
-## 2. Architectural Principles
+## 3. Architectural Principles
 
 ### Server Is the Source of Truth
 
-The client displays financial state but never owns authoritative financial state.
+```text
+Client  → displays financial state
+Server  → owns financial state
+```
+
+The client never owns authoritative financial state.
 
 ### Domain-First
 
-Financial rules live in domain modules rather than UI components.
+Financial rules live in domain modules, not in UI components.
 
 ### Explicit Authorization
 
-Authentication answers "who are you?"
+```text
+Authentication   → "who are you?"
 
-Authorization answers "what can you do?"
+Authorization    → "what can you do?"
 
-Both are required.
+Both are required. Always.
+```
 
 ### Auditability
 
@@ -64,63 +158,175 @@ Use integer minor units:
 
 Do not use JavaScript floating-point arithmetic.
 
-## 3. Layers
+## 4. Layers
+
+```text
+┌──────────────────────────────────────────────┐
+│  UI                                          │
+│  src/app · src/components                    │
+│  rendering · interaction · a11y              │
+├──────────────────────────────────────────────┤
+│  Actions / API                               │
+│  src/actions · src/app/api                   │
+│  auth · validation · domain calls            │
+├──────────────────────────────────────────────┤
+│  Domain                                      │
+│  src/lib/finance · src/lib/permissions       │
+│  business rules · calculations · workflows   │
+├──────────────────────────────────────────────┤
+│  Persistence                                 │
+│  src/db                                      │
+│  schema · migrations · queries · tx          │
+├──────────────────────────────────────────────┤
+│  Storage                                     │
+│  src/lib/storage                             │
+│  R2 upload · signed URLs · deletion          │
+└──────────────────────────────────────────────┘
+```
 
 ### UI
 
-`src/app`, `src/components`
-
 Responsible for:
-- rendering
-- interaction
-- loading/error states
-- accessibility
+
+```text
+├── rendering
+├── interaction
+├── loading/error states
+└── accessibility
+```
 
 Not responsible for:
-- financial truth
-- permission decisions
-- database writes
+
+```text
+├── financial truth
+├── permission decisions
+└── database writes
+```
 
 ### Actions / API
 
-`src/actions`, `src/app/api`
-
 Responsible for:
-- receiving requests
-- authentication
-- input validation
-- calling domain services
+
+```text
+├── receiving requests
+├── authentication
+├── input validation
+└── calling domain services
+```
 
 ### Domain
 
-`src/lib/finance`, `src/lib/permissions`
-
 Responsible for:
-- business rules
-- calculations
-- authorization decisions
-- transaction workflows
+
+```text
+├── business rules
+├── calculations
+├── authorization decisions
+└── transaction workflows
+```
 
 ### Persistence
 
-`src/db`
-
 Responsible for:
-- schema
-- migrations
-- queries
-- database transactions
+
+```text
+├── schema
+├── migrations
+├── queries
+└── database transactions
+```
 
 ### Storage
 
-`src/lib/storage`
-
 Responsible for:
-- R2 object upload
-- signed access URLs
-- object deletion where allowed
 
-## 4. Database Model
+```text
+├── R2 object upload
+├── signed access URLs
+└── object deletion where allowed
+```
+
+## 5. Multi-Tenancy — Day One
+
+The product is a single-organization platform today, but the database is multi-tenant from day one.
+
+```text
+┌──────────────────────────────────────────────┐
+│  DECISION                                    │
+├──────────────────────────────────────────────┤
+│                                              │
+│  Multi-tenant schema   → YES (day one)       │
+│  Multi-tenant product  → NO (not now)        │
+│                                              │
+│  organizations exists from the first         │
+│  migration. Every financial row carries      │
+│  organization_id.                            │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+### Tenant Root
+
+```text
+organizations
+      │
+      ├── organization_members
+      │         │
+      │         ▼
+      │      users
+      │
+      └── projects
+                │
+                ├── project_members
+                │         │
+                │         ▼
+                │      users
+                │
+                └── transactions
+                          │
+                          ▼
+                      audit_logs
+```
+
+### Tenant Isolation Rule
+
+Every financial row answers one question first:
+
+```text
+"Which organization does this belong to?"
+```
+
+```text
+organization_id is mandatory on:
+
+├── projects
+├── project_members
+├── transactions
+└── audit_logs
+
+No organization scope ⇒ No data access
+```
+
+### Why Not Full SaaS Now
+
+```text
+SaaS Complexity
+├── org switching UI            → skipped
+├── invitations per org         → skipped
+├── billing / subscriptions     → skipped
+├── custom domains              → skipped
+└── usage metering              → skipped
+
+Schema Complexity
+├── organizations table         → built
+├── organization_id scoping     → built
+├── membership model            → built
+└── per-tenant queries          → built
+```
+
+The isolation is structural. The SaaS surface can come later without schema surgery.
+
+## 6. Database Model
 
 Core tables:
 
@@ -145,24 +351,28 @@ Organization
                     └── Audit Logs
 ```
 
-## 5. Transaction Model
+Keep Better Auth tables aligned with the project's Drizzle schema/migrations.
 
-Use one unified ledger:
+## 7. Transaction Model
+
+One unified ledger:
 
 ```text
-transaction.type:
-  PAYMENT
-  WITHDRAWAL
+transaction.type
+├── PAYMENT
+└── WITHDRAWAL
 
-transaction.status:
-  PENDING
-  APPROVED
-  REJECTED
+transaction.status
+├── PENDING
+├── APPROVED
+└── REJECTED
 ```
 
 This avoids separate financial systems for payments and withdrawals.
 
-## 6. Financial Calculations
+A transaction belongs to exactly one project, and every project belongs to exactly one organization.
+
+## 8. Financial Calculations
 
 ```text
 Approved Payments
@@ -187,7 +397,7 @@ Member Balance
 = Member Net Contribution - Target Contribution
 ```
 
-## 7. Atomic Approval
+## 9. Atomic Approval
 
 Approval must execute inside one database transaction:
 
@@ -203,9 +413,9 @@ BEGIN
 
 If any operation fails, the complete operation rolls back.
 
-## 8. Storage
+## 10. Storage
 
-PostgreSQL stores:
+PostgreSQL stores metadata only:
 
 ```text
 evidence_key =
@@ -214,39 +424,40 @@ transactions/{transactionId}/evidence.webp
 
 The image itself is stored in Cloudflare R2.
 
+```text
+PostgreSQL = keys
+R2         = bytes
+```
+
 Do not store binary evidence in PostgreSQL.
 
-## 9. Routes
+## 11. Routes
 
 ```text
 /
- /login
- /dashboard
- /projects
- /projects/[slug]
- /projects/[slug]/transactions
- /projects/[slug]/members
- /projects/[slug]/settings
- /pending
- /settings
+/login
+/dashboard
+/projects
+/projects/[slug]
+/projects/[slug]/transactions
+/projects/[slug]/members
+/projects/[slug]/settings
+/pending
+/settings
 ```
 
-## 10. Deployment
-
-Development:
+## 12. Deployment
 
 ```text
-Local Next.js
-→ Neon development branch
-→ R2 development bucket/path
-```
+Development
+├── Local Next.js
+├── Neon development branch
+└── R2 development bucket/path
 
-Production:
-
-```text
-Vercel
-→ Neon production branch
-→ R2 production bucket/path
+Production
+├── Vercel
+├── Neon production branch
+└── R2 production bucket/path
 ```
 
 Do not use the production database for normal local migration experimentation.

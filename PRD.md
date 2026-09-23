@@ -1,4 +1,18 @@
-# PRD — Ledger
+# PRD — LEDGER
+
+```text
+┌──────────────────────────────────────────────┐
+│               PHANTOMS FINANCE               │
+├──────────────────────────────────────────────┤
+│                                              │
+│   PRD                                        │
+│   Product Requirements                       │
+│                                              │
+│   Problem · Users · Concepts · Rules         │
+│   MVP · Acceptance Criteria                  │
+│                                              │
+└──────────────────────────────────────────────┘
+```
 
 ## 1. Product Overview
 
@@ -6,113 +20,182 @@ Ledger is the internal financial management platform for PHANTOMS.
 
 It provides a reliable ledger for project budgets, member payments, withdrawals, approvals, balances, evidence, and audit history.
 
-The system is internal-first. It is not a public banking or accounting product.
+```text
+Internal-first
 
-## 2. Problem
+NOT a public banking product
+NOT a public accounting product
+```
 
-PHANTOMS projects may have shared budgets and multiple members contributing or spending money. Manual tracking through chats, spreadsheets, and messages creates problems:
+## 2. Positioning
 
-- unclear project balance
-- unclear individual contribution
-- missing payment evidence
-- difficult approval workflow
-- inconsistent calculations
-- poor historical traceability
+```text
+PHANTOMS Finance
+        ↓
+Team Finance Platform
+        ↓
+Multi-Organization SaaS   ← future, not now
+```
+
+### Scope Ladder
+
+Possible future features:
+
+```text
+Organizations   ✅ schema-ready day one
+Teams           ⬜ future
+Projects        ✅ MVP
+Budgets         ✅ MVP (project budget)
+Members         ✅ MVP
+Expenses        ✅ MVP (transactions)
+Approvals       ✅ MVP
+Reports         ✅ basic dashboards
+Audit Logs      ✅ MVP
+```
+
+### The Decision
+
+```text
+┌──────────────────────────────────────────────┐
+│  DO NOT build the SaaS complexity now        │
+├──────────────────────────────────────────────┤
+│                                              │
+│  Just make the database architecture         │
+│  multi-tenant from day one.                  │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+## 3. Problem
+
+PHANTOMS projects have shared budgets and multiple members contributing or spending money. Manual tracking through chats, spreadsheets, and messages creates problems:
+
+```text
+├── unclear project balance
+├── unclear individual contribution
+├── missing payment evidence
+├── difficult approval workflow
+├── inconsistent calculations
+└── poor historical traceability
+```
 
 Ledger centralizes the financial state.
 
-## 3. Goals
+## 4. Goals
 
 ### Primary Goals
 
-- Track project budgets.
-- Track member payments.
-- Track project withdrawals.
-- Require review before financial transactions become approved.
-- Calculate project and member balances automatically.
-- Preserve evidence.
-- Preserve an audit trail.
-- Provide role-based access.
+```text
+├── Track project budgets
+├── Track member payments
+├── Track project withdrawals
+├── Require review before approval
+├── Calculate balances automatically
+├── Preserve evidence
+├── Preserve an audit trail
+└── Provide role-based access
+```
 
 ### Non-Goals
 
-- Banking.
-- Payment processing.
-- Card issuing.
-- Payroll.
-- Tax accounting.
-- Public financial reporting.
-- Cryptocurrency.
-- Automatic bank reconciliation.
+```text
+├── Banking
+├── Payment processing
+├── Card issuing
+├── Payroll
+├── Tax accounting
+├── Public financial reporting
+├── Cryptocurrency
+└── Automatic bank reconciliation
+```
 
-## 4. Users
+## 5. Users
 
-### Owner
+```text
+OWNER
+    ↓
+Full organization control
+Projects · Members · Finance · Approvals
 
-Owns the organization and controls projects, members, and financial approvals.
+HEAD
+    ↓
+Review project financial activity
+Approve / Reject transactions
 
-### Head
+MEMBER
+    ↓
+View authorized projects
+Submit payments / withdrawals
+```
 
-Reviews project financial activity and approves/rejects transactions.
-
-### Member
-
-Views authorized project information and submits payments/withdrawals.
-
-## 5. Core Concepts
+## 6. Core Concepts
 
 ### Organization
 
-The PHANTOMS organization.
+The PHANTOMS organization. The tenant root. Exists from day one in the schema, even while only one organization is in use.
 
 ### Project
 
 A project has:
-- name
-- slug
-- description
-- total budget
-- currency
-- status
-- members
+
+```text
+├── name
+├── slug
+├── description
+├── total budget
+├── currency
+├── status
+└── members
+```
 
 Example:
 
 ```text
-Project: Rafiq
-Budget: 15,000 EGP
-Members: 30
-Target/member: 500 EGP
+Project:        Rafiq
+Budget:         15,000 EGP
+Members:        30
+Target/member:  500 EGP
 ```
 
 ### Transaction
 
 A transaction belongs to exactly one project.
 
-Types:
+```text
+Types
+├── PAYMENT        money in
+└── WITHDRAWAL     money out
 
-- PAYMENT
-- WITHDRAWAL
-
-Statuses:
-
-- PENDING
-- APPROVED
-- REJECTED
+Statuses
+├── PENDING        awaiting review
+├── APPROVED       part of the ledger
+└── REJECTED       history only
+```
 
 A transaction includes:
-- actor/member
-- amount
-- paid_to
-- notes
-- optional evidence
-- status
-- approver
-- approval timestamp
 
-## 6. Functional Requirements
+```text
+├── actor/member
+├── amount
+├── paid_to
+├── notes
+├── optional evidence
+├── status
+├── approver
+└── approval timestamp
+```
+
+## 7. Functional Requirements
 
 ### Authentication
+
+```text
+User
+  ↓
+must authenticate
+  ↓
+protected resources
+```
 
 Users must authenticate before accessing protected resources.
 
@@ -122,70 +205,88 @@ Users can only access projects for which they have valid organization/project me
 
 ### Submit Payment
 
-A member can:
-- select amount
-- specify recipient (`paid_to`)
-- add optional notes
-- attach optional evidence
+```text
+Member
+  ↓
+select amount
+  ↓
+specify recipient (paid_to)
+  ↓
+add optional notes
+  ↓
+attach optional evidence
+  ↓
+status = PENDING
+```
 
 The project is determined by the project route/context.
-
-New transaction status:
-
-`PENDING`
 
 ### Submit Withdrawal
 
 A member with permission can submit a withdrawal.
 
-New transaction status:
-
-`PENDING`
+```text
+New transaction status = PENDING
+```
 
 ### Approval
 
 Owner/Head can approve or reject eligible transactions.
 
+```text
 A user cannot approve their own transaction.
+```
 
 Approved transaction:
-- affects financial totals
-- becomes part of the authoritative ledger
+
+```text
+├── affects financial totals
+└── becomes part of the authoritative ledger
+```
 
 Rejected transaction:
-- does not affect approved financial totals
+
+```text
+└── does not affect approved financial totals
+```
 
 ### Project Financial Summary
 
 Show:
-- total budget
-- approved payments
-- approved withdrawals
-- net collected
-- remaining budget
-- funding progress
-- pending transaction amount
+
+```text
+├── total budget
+├── approved payments
+├── approved withdrawals
+├── net collected
+├── remaining budget
+├── funding progress
+└── pending transaction amount
+```
 
 ### Member Summary
 
 Show:
-- target contribution
-- approved payments
-- approved withdrawals
-- net contribution
-- remaining balance
 
-## 7. Business Rules
+```text
+├── target contribution
+├── approved payments
+├── approved withdrawals
+├── net contribution
+└── remaining balance
+```
 
-Money is stored exactly.
+## 8. Business Rules
 
-Pending/rejected transactions do not affect approved balances.
+```text
+├── Money is stored exactly (integer minor units)
+├── PENDING never affects approved balances
+├── REJECTED never affects approved balances
+├── A withdrawal is never treated as available money
+└── All approval operations are auditable
+```
 
-A withdrawal cannot be treated as available money.
-
-All approval operations must be auditable.
-
-## 8. MVP
+## 9. MVP
 
 MVP flow:
 
@@ -202,41 +303,55 @@ Login
 
 Then:
 
-- withdrawal
-- evidence
-- audit log
-- project/member dashboards
-- filtering
-- polished UI
+```text
+├── withdrawal
+├── evidence
+├── audit log
+├── project/member dashboards
+├── filtering
+└── polished UI
+```
 
-## 9. Acceptance Criteria
+## 10. Acceptance Criteria
 
 A payment:
-- cannot be submitted without valid amount
-- cannot bypass authentication
-- cannot target an unauthorized project
-- starts as PENDING
-- only approved payment affects approved totals
+
+```text
+├── cannot be submitted without valid amount
+├── cannot bypass authentication
+├── cannot target an unauthorized project
+├── starts as PENDING
+└── only approved payment affects approved totals
+```
 
 An approval:
-- requires authorization
-- cannot approve the actor's own transaction
-- changes status atomically
-- records approver and timestamp
-- creates an audit event
+
+```text
+├── requires authorization
+├── cannot approve the actor's own transaction
+├── changes status atomically
+├── records approver and timestamp
+└── creates an audit event
+```
 
 A rejected transaction:
-- remains historical
-- does not affect approved totals
 
-## 10. Future Features
+```text
+├── remains historical
+└── does not affect approved totals
+```
 
-Potential future additions:
-- CSV export
-- monthly reporting
-- notifications
-- recurring project expenses
-- richer analytics
-- approval comments
-- budget alerts
-- configurable currencies
+## 11. Future Features
+
+```text
+├── CSV export
+├── monthly reporting
+├── notifications
+├── recurring project expenses
+├── richer analytics
+├── approval comments
+├── budget alerts
+├── configurable currencies
+├── teams
+└── multi-organization surface
+```

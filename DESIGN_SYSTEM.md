@@ -1,171 +1,226 @@
-# Design System
+# DESIGN SYSTEM
 
-## Product Character
+```text
+┌──────────────────────────────────────────────┐
+│               PHANTOMS FINANCE               │
+├──────────────────────────────────────────────┤
+│                                              │
+│   DESIGN SYSTEM                              │
+│   UI/UX Rules                                │
+│                                              │
+│   Character · Color · Typography             │
+│   Components · Financial UI · A11y           │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+## 1. Product Character
 
 Ledger should feel:
 
-- professional
-- precise
-- modern
-- trustworthy
-- calm
-- technical
+```text
+professional
+    ↓
+precise
+    ↓
+modern · trustworthy
+    ↓
+calm · technical
+```
 
 Avoid:
-- excessive gradients
-- noisy dashboards
-- decorative financial charts without meaning
-- excessive glassmorphism
-- fake banking aesthetics
-- unnecessary animations
 
-## Visual Direction
+```text
+├── excessive gradients
+├── noisy dashboards
+├── decorative financial charts without meaning
+├── excessive glassmorphism
+├── fake banking aesthetics
+└── unnecessary animations
+```
+
+## 2. Visual Direction
 
 Use a modern SaaS language inspired by high-quality productivity tools.
 
 Prioritize:
-- strong typography
-- clear spacing
-- restrained surfaces
-- subtle borders
-- meaningful color semantics
-- dense but readable data presentation
 
-## Color Semantics
+```text
+├── strong typography
+├── clear spacing
+├── restrained surfaces
+├── subtle borders
+├── meaningful color semantics
+└── dense but readable data presentation
+```
+
+## 3. Color Semantics
 
 Colors communicate state, not decoration.
 
-- Primary: brand/action
-- Success: approved/positive financial state
-- Warning: pending/review
-- Destructive: rejected/danger
-- Neutral: informational/disabled
+```text
+Primary     → brand / action
+Success     → approved / positive financial state
+Warning     → pending / review
+Destructive → rejected / danger
+Neutral     → informational / disabled
+```
 
 Never rely on color alone. Pair state colors with text/iconography.
 
-## Typography
+## 4. Typography
 
 Use a clean sans-serif system.
 
-Recommended hierarchy:
+Hierarchy:
 
 ```text
 Display
+  ↓
 Page title
+  ↓
 Section title
+  ↓
 Card title
+  ↓
 Body
+  ↓
 Secondary
+  ↓
 Caption
 ```
 
-Numbers in financial cards should have strong typographic emphasis.
+Numbers in financial cards have strong typographic emphasis.
 
-## Spacing
+## 5. Spacing
 
 Use a consistent spacing scale based on Tailwind tokens.
 
 Avoid arbitrary one-off spacing unless visually justified.
 
-## Components
+## 6. Components
 
 Core UI components:
 
-- Button
-- Input
-- Textarea
-- Select
-- Dialog
-- Sheet
-- Card
-- Badge
-- Table
-- Tabs
-- Dropdown
-- Toast
-- Skeleton
-- Empty State
-- Alert
+```text
+├── Button
+├── Input
+├── Textarea
+├── Select
+├── Dialog
+├── Sheet
+├── Card
+├── Badge
+├── Table
+├── Tabs
+├── Dropdown
+├── Toast
+├── Skeleton
+├── Empty State
+└── Alert
+```
 
 Finance components:
 
-- SummaryCard
-- ProjectCard
-- FundingProgress
-- TransactionTable
-- TransactionCard
-- TransactionStatus
-- ApprovalCard
-- MemberBalance
-- EvidencePreview
+```text
+├── SummaryCard
+├── ProjectCard
+├── FundingProgress
+├── TransactionTable
+├── TransactionCard
+├── TransactionStatus
+├── ApprovalCard
+├── MemberBalance
+└── EvidencePreview
+```
 
-## Financial UI
+## 7. Financial UI
 
 Always distinguish:
 
 ```text
 PENDING
+    ↓
 APPROVED
+    ↓
 REJECTED
 ```
 
 Display:
-- amount
-- transaction type
-- actor
-- recipient
-- date
-- status
 
-Approved amounts should be visually distinct from pending amounts.
+```text
+├── amount
+├── transaction type
+├── actor
+├── recipient
+├── date
+└── status
+```
 
-## Forms
+Approved amounts are visually distinct from pending amounts.
+
+## 8. Forms
 
 Every finance form should:
-- clearly display the current project
-- show currency
-- validate amount
-- prevent accidental duplicate submission
-- show submission state
-- show server errors safely
-- support keyboard navigation
 
-## Responsive Design
+```text
+├── clearly display the current project
+├── show currency
+├── validate amount
+├── prevent accidental duplicate submission
+├── show submission state
+├── show server errors safely
+└── support keyboard navigation
+```
+
+## 9. Responsive Design
 
 Desktop:
-- data-dense tables
-- dashboard grids
+
+```text
+├── data-dense tables
+└── dashboard grids
+```
 
 Mobile:
-- cards instead of wide tables when necessary
-- stacked transaction metadata
-- full-width actions
-- touch-friendly controls
 
-## Accessibility
+```text
+├── cards instead of wide tables when necessary
+├── stacked transaction metadata
+├── full-width actions
+└── touch-friendly controls
+```
+
+## 10. Accessibility
 
 Target WCAG 2.2 AA where practical.
 
 Requirements:
-- keyboard accessible
-- visible focus states
-- semantic HTML
-- sufficient contrast
-- labels for inputs
-- no color-only status communication
-- accessible dialogs and menus
 
-## Motion
+```text
+├── keyboard accessible
+├── visible focus states
+├── semantic HTML
+├── sufficient contrast
+├── labels for inputs
+├── no color-only status communication
+└── accessible dialogs and menus
+```
 
-Motion should communicate:
-- loading
-- state transition
-- navigation
-- confirmation
+## 11. Motion
+
+Motion communicates:
+
+```text
+├── loading
+├── state transition
+├── navigation
+└── confirmation
+```
 
 Avoid animation that delays financial actions.
 
-## Icons
+## 12. Icons
 
 Use Lucide consistently.
 

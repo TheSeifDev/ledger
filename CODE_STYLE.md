@@ -1,6 +1,20 @@
-# Code Style
+# CODE STYLE
 
-## TypeScript
+```text
+┌──────────────────────────────────────────────┐
+│               PHANTOMS FINANCE               │
+├──────────────────────────────────────────────┤
+│                                              │
+│   CODE STYLE                                 │
+│   Coding Conventions                         │
+│                                              │
+│   TypeScript · Naming · Functions            │
+│   Actions · Validation · Git                 │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+## 1. TypeScript
 
 Use strict TypeScript.
 
@@ -20,15 +34,13 @@ any
 
 unless there is a documented reason.
 
-## Naming
-
-Use:
+## 2. Naming
 
 ```text
-PascalCase      Components / classes
-camelCase       variables / functions
-UPPER_SNAKE_CASE constants
-kebab-case      URL slugs
+PascalCase        Components / classes
+camelCase         variables / functions
+UPPER_SNAKE_CASE  constants
+kebab-case        URL slugs
 ```
 
 Examples:
@@ -40,7 +52,7 @@ MAX_NOTE_LENGTH
 rafiq
 ```
 
-## Functions
+## 3. Functions
 
 Prefer small functions with one responsibility.
 
@@ -59,7 +71,7 @@ approveTransaction()
 createAuditLog()
 ```
 
-## Imports
+## 4. Imports
 
 Prefer path aliases:
 
@@ -69,7 +81,7 @@ import { db } from "@/db";
 
 Avoid deep relative imports when an alias is available.
 
-## React
+## 5. React
 
 Prefer Server Components.
 
@@ -80,45 +92,52 @@ Use:
 ```
 
 only when necessary for:
-- state
-- effects
-- browser APIs
-- interactive client-only libraries
 
-## Server Actions
+```text
+├── state
+├── effects
+├── browser APIs
+└── interactive client-only libraries
+```
+
+## 6. Server Actions
 
 Actions should be thin.
 
-Example structure:
-
 ```text
 submitPaymentAction
-→ authenticate
-→ validate
-→ authorize
-→ finance service
-→ return safe result
+   ↓
+authenticate
+   ↓
+validate
+   ↓
+authorize (org + project + role)
+   ↓
+finance service
+   ↓
+return safe result
 ```
 
 Do not place large SQL/business workflows directly in the action.
 
-## Error Handling
+## 7. Error Handling
 
 Use typed/domain errors where practical.
 
-Do not expose:
-- SQL errors
-- stack traces
-- internal paths
-- secrets
+Do not expose to users:
 
-to users.
+```text
+├── SQL errors
+├── stack traces
+├── internal paths
+└── secrets
+```
 
 Return user-safe messages and log internal details appropriately.
 
-## Validation
+## 8. Validation
 
-Zod schemas should live close to the domain boundary.
+Zod schemas live close to the domain boundary.
 
 Example:
 
@@ -130,24 +149,35 @@ const paymentSchema = z.object({
 });
 ```
 
-## Database
+## 9. Database
 
 Do not query the database directly from UI components.
 
 Keep database access in `src/db` or domain repositories/services.
 
-## Comments
+Every financial query is organization-scoped:
+
+```text
+db.select()
+  .from(transactions)
+  .where(eq(transactions.organizationId, org.id))   // always
+```
+
+## 10. Comments
 
 Write comments for:
-- why something exists
-- non-obvious business rules
-- security constraints
+
+```text
+├── why something exists
+├── non-obvious business rules
+└── security constraints
+```
 
 Do not comment obvious syntax.
 
-## Git
+## 11. Git
 
-Commit messages should describe intent.
+Commit messages describe intent.
 
 Examples:
 
@@ -159,7 +189,7 @@ test(finance): cover self-approval rejection
 docs: update architecture
 ```
 
-## Formatting
+## 12. Formatting
 
 Use the project's configured formatter/linter.
 

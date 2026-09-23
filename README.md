@@ -1,25 +1,123 @@
-# Ledger
+# LEDGER
 
-Internal finance and project ledger for PHANTOMS.
+```text
+┌──────────────────────────────────────────────┐
+│               PHANTOMS FINANCE               │
+├──────────────────────────────────────────────┤
+│                                              │
+│   L E D G E R                                │
+│   Internal Team Finance Platform             │
+│                                              │
+│   Projects · Budgets · Members               │
+│   Transactions · Approvals · Audit           │
+│                                              │
+└──────────────────────────────────────────────┘
+```
 
-Ledger centralizes project budgets, member contributions, withdrawals, approvals, evidence, balances, and financial audit history.
+Ledger is the internal finance and project ledger for PHANTOMS.
 
-## Stack
+It centralizes project budgets, member contributions, withdrawals, approvals, evidence, balances, and financial audit history.
 
-- Next.js
-- TypeScript
-- React
-- Neon PostgreSQL
-- Drizzle ORM
-- Better Auth
-- Cloudflare R2
-- Zod
-- Tailwind CSS
-- shadcn/ui
-- Lucide
-- Vercel
+## 1. Positioning
 
-## Product Flow
+```text
+PHANTOMS Finance
+        ↓
+Team Finance Platform
+        ↓
+Multi-Organization SaaS   ← future, not now
+```
+
+The database is **multi-tenant from day one**.
+
+The product is **not** a SaaS yet. One organization. One team. No billing, no org switching, no subscription logic. The schema simply never needs a painful migration when that day comes.
+
+## 2. Final Architecture Decision
+
+```text
+┌──────────────────────────────────────────────┐
+│               PHANTOMS FINANCE               │
+├──────────────────────────────────────────────┤
+│                                              │
+│  Next.js + TypeScript                        │
+│       │                                      │
+│       ├── Server Components                  │
+│       ├── Server Actions                     │
+│       └── Route Handlers                     │
+│                    │                         │
+│                    ▼                         │
+│              Finance Domain                  │
+│                    │                         │
+│                    ▼                         │
+│                Drizzle ORM                   │
+│                    │                         │
+│                    ▼                         │
+│              Neon PostgreSQL                 │
+│                                              │
+│  Better Auth ───────────── Authentication    │
+│                                              │
+│  Cloudflare R2 ─────────── Evidence Files    │
+│                                              │
+│  Vercel ──────────────────── Deployment      │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+## 3. Core Philosophy
+
+```text
+PostgreSQL = Financial Truth
+
+R2 = Files
+
+Next.js = Application
+
+Finance Domain = Business Rules
+
+Audit Log = Accountability
+
+Roles/Permissions = Security
+
+UI = Presentation
+```
+
+## 4. Build Phases
+
+Every phase is fully working before the next one starts:
+
+```text
+Foundation
+    ↓
+Database
+    ↓
+Auth
+    ↓
+Projects
+    ↓
+Transactions
+    ↓
+Approval
+    ↓
+Finance Engine
+    ↓
+Audit
+    ↓
+Dashboard
+```
+
+## 5. Stack
+
+| Layer      | Technology                        |
+| ---------- | --------------------------------- |
+| Framework  | Next.js (App Router) + TypeScript |
+| UI         | React, Tailwind CSS, shadcn/ui, Lucide |
+| Database   | Neon PostgreSQL + Drizzle ORM     |
+| Auth       | Better Auth                       |
+| Files      | Cloudflare R2                     |
+| Validation | Zod                               |
+| Deployment | Vercel                            |
+
+## 6. Product Flow
 
 ```text
 User Login
@@ -44,19 +142,21 @@ Owner / Head Review
        History
 ```
 
-## Core Roles
+## 7. Core Roles
 
-| Role | Access |
-|---|---|
-| OWNER | Full control |
-| HEAD | Review and approve/reject |
-| MEMBER | View authorized projects and submit transactions |
+| Role   | Access                                            |
+| ------ | ------------------------------------------------- |
+| OWNER  | Full control                                      |
+| HEAD   | Review and approve/reject                         |
+| MEMBER | View authorized projects, submit transactions     |
 
+```text
 A user cannot approve their own transaction.
+```
 
-## Financial Model
+## 8. Financial Model
 
-For approved transactions:
+Project:
 
 ```text
 Approved Payments
@@ -82,7 +182,7 @@ Balance
 = Net Contribution - Target Contribution
 ```
 
-## Development
+## 9. Development
 
 Install dependencies:
 
@@ -102,19 +202,23 @@ Expected local URL:
 http://localhost:3000
 ```
 
-## Database
+## 10. Database
 
-Local development should use a dedicated Neon development branch.
+```text
+Local Development
+        ↓
+Neon development branch
 
-Production should use the production Neon branch.
+Production
+        ↓
+Neon production branch
+```
 
 Drizzle is responsible for application/database migrations.
 
 Do not use direct Better Auth migration commands for the Drizzle-backed setup.
 
-## Environment Variables
-
-Typical variables:
+## 11. Environment Variables
 
 ```env
 DATABASE_URL=
@@ -131,7 +235,7 @@ R2_PUBLIC_URL=
 
 Never commit real values.
 
-## Project Structure
+## 12. Project Structure
 
 ```text
 src/
@@ -149,18 +253,20 @@ src/
 └── types/
 ```
 
-## Documentation
+## 13. Documentation
 
-- `AGENTS.md` — coding-agent/project instructions
-- `CLAUDE.md` — Claude-specific execution guidance
-- `PRD.md` — product requirements
-- `ARCHITECTURE.md` — technical architecture
-- `DESIGN_SYSTEM.md` — UI/UX rules
-- `SECURITY.md` — security requirements
-- `CODE_STYLE.md` — coding conventions
-- `TESTING.md` — testing strategy
+| File               | Purpose                           |
+| ------------------ | --------------------------------- |
+| `AGENTS.md`        | Coding-agent/project instructions |
+| `CLAUDE.md`        | Claude-specific execution guidance |
+| `PRD.md`           | Product requirements              |
+| `ARCHITECTURE.md`  | Technical architecture            |
+| `DESIGN_SYSTEM.md` | UI/UX rules                       |
+| `SECURITY.md`      | Security requirements             |
+| `CODE_STYLE.md`    | Coding conventions                |
+| `TESTING.md`       | Testing strategy                  |
 
-## Quality Gate
+## 14. Quality Gate
 
 Before considering a feature complete:
 
@@ -173,20 +279,22 @@ npm run build
 
 Run only the commands that exist in `package.json`.
 
-## Security
+## 15. Security
 
 Financial data is sensitive.
 
-Never:
-- trust client authorization
-- expose secrets
-- use floating point for money
-- silently rewrite approved history
-- store evidence binaries in PostgreSQL
-- bypass audit logging
-- run destructive production migrations casually
+```text
+Never
+├── trust client authorization
+├── expose secrets
+├── use floating point for money
+├── silently rewrite approved history
+├── store evidence binaries in PostgreSQL
+├── bypass audit logging
+└── run destructive production migrations casually
+```
 
-## Status
+## 16. Status
 
 Early development / foundation phase.
 

@@ -1,29 +1,58 @@
-# Testing Strategy
+# TESTING
 
-## Objective
+```text
+┌──────────────────────────────────────────────┐
+│               PHANTOMS FINANCE               │
+├──────────────────────────────────────────────┤
+│                                              │
+│   TESTING                                    │
+│   Testing Strategy                           │
+│                                              │
+│   Pyramid · Financial Cases · Approval       │
+│   Authorization · Evidence · E2E             │
+│                                              │
+└──────────────────────────────────────────────┘
+```
+
+## 1. Objective
 
 Testing prioritizes financial correctness and authorization over superficial UI coverage.
 
-## Test Pyramid
+## 2. Test Pyramid
 
-### Unit Tests
+```text
+        ▲
+       /E2E\        critical user journeys
+      /─────\
+     /Integra\     repositories · approvals · audit · authZ
+    /─────────\
+   /   Unit    \   calculations · state rules · permissions
+  /─────────────\
+        ▼
+```
 
-Highest priority.
+### Unit Tests — Highest Priority
 
 Test:
-- financial calculations
-- transaction state rules
-- permission rules
-- validation
-- edge cases
+
+```text
+├── financial calculations
+├── transaction state rules
+├── permission rules
+├── validation
+└── edge cases
+```
 
 ### Integration Tests
 
 Test:
-- database repositories
-- transaction approval
-- audit logging
-- auth + authorization boundaries
+
+```text
+├── database repositories
+├── transaction approval
+├── audit logging
+└── auth + authorization boundaries
+```
 
 ### End-to-End Tests
 
@@ -38,30 +67,34 @@ Login
 → Verify updated balance
 ```
 
-## Financial Test Cases
+## 3. Financial Test Cases
 
 ### Payment
 
-- positive amount accepted
-- zero rejected
-- negative rejected
-- approved payment increases approved payments
-- pending payment does not affect approved totals
-- rejected payment does not affect approved totals
+```text
+├── positive amount accepted
+├── zero rejected
+├── negative rejected
+├── approved payment increases approved payments
+├── pending payment does not affect approved totals
+└── rejected payment does not affect approved totals
+```
 
 ### Withdrawal
 
-- approved withdrawal reduces net collected funds
-- pending withdrawal does not affect approved totals
-- rejected withdrawal does not affect approved totals
+```text
+├── approved withdrawal reduces net collected funds
+├── pending withdrawal does not affect approved totals
+└── rejected withdrawal does not affect approved totals
+```
 
 ### Member Balance
 
 Given:
 
 ```text
-Target = 50000
-Approved payments = 35000
+Target             = 50000
+Approved payments  = 35000
 Approved withdrawals = 0
 ```
 
@@ -69,53 +102,72 @@ Expected:
 
 ```text
 Net contribution = 35000
-Balance = -15000
+Balance          = -15000
 ```
 
 The implementation should define the UI meaning of negative/positive balance clearly.
 
-## Approval Tests
+## 4. Approval Tests
 
 Must test:
 
-- authorized owner can approve
-- authorized head can approve
-- member cannot approve
-- transaction creator cannot approve own transaction
-- already approved transaction cannot be approved again
-- rejected transaction cannot be approved without an explicit correction workflow
-- approval creates audit event
-- transaction update + audit event are atomic
+```text
+├── authorized owner can approve
+├── authorized head can approve
+├── member cannot approve
+├── transaction creator cannot approve own transaction
+├── already approved transaction cannot be approved again
+├── rejected transaction cannot be approved without
+│   an explicit correction workflow
+├── approval creates audit event
+└── transaction update + audit event are atomic
+```
 
-## Authorization Tests
+## 5. Authorization Tests
 
 For every protected operation test:
 
-- unauthenticated user
-- authenticated unauthorized user
-- authorized member
-- authorized head
-- authorized owner
+```text
+├── unauthenticated user
+├── authenticated unauthorized user
+├── authorized member
+├── authorized head
+└── authorized owner
+```
 
 Also test cross-project access.
 
-## Evidence Tests
+### Tenant Isolation Tests
+
+```text
+├── user of org A cannot read org B projects
+├── user of org A cannot write org B transactions
+├── unscoped queries are rejected in the domain layer
+└── cross-org evidence access fails
+```
+
+Even with a single organization today, the boundary is tested. It must fail closed.
+
+## 6. Evidence Tests
 
 Test:
-- allowed file types
-- disallowed MIME types
-- size limit
-- generated object key
-- unauthorized access to private evidence
-- failed upload does not create broken financial state
 
-## Database Tests
+```text
+├── allowed file types
+├── disallowed MIME types
+├── size limit
+├── generated object key
+├── unauthorized access to private evidence
+└── failed upload does not create broken financial state
+```
+
+## 7. Database Tests
 
 Use a dedicated test database/environment.
 
 Never run destructive test migrations against production.
 
-## E2E Critical Path
+## 8. E2E Critical Path
 
 At minimum:
 
@@ -129,14 +181,28 @@ member submits payment
 → audit record exists
 ```
 
-## Regression
+## 9. Regression
 
-Every discovered financial/security bug should get a regression test.
+Every discovered financial/security bug gets a regression test.
 
-## Definition of Test Completion
+```text
+bug found
+   ↓
+fix implemented
+   ↓
+regression test added
+   ↓
+never silently reintroduced
+```
+
+## 10. Definition of Test Completion
 
 A financial feature is not complete until:
-- business rules have unit coverage,
-- authorization is covered,
-- important DB transitions are integration tested,
-- critical UX flow is covered by E2E where practical.
+
+```text
+├── business rules have unit coverage
+├── authorization is covered
+├── tenant isolation is covered
+├── important DB transitions are integration tested
+└── critical UX flow is covered by E2E where practical
+```
