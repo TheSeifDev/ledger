@@ -100,12 +100,12 @@ UI
 → PostgreSQL
 ```
 
-Business rules belong in `src/lib/finance/`, not in UI components.
+Business rules belong in `lib/finance/`, not in UI components.
 
 Recommended domains:
 
 ```text
-src/lib/
+lib/
 ├── auth/
 ├── finance/
 ├── permissions/
@@ -204,19 +204,14 @@ Keep Better Auth tables aligned with the project's Drizzle schema/migrations.
 Prefer:
 
 ```text
+app/            # route orchestration (App Router, route handlers)
 src/
-  app/
-  components/
-  actions/
-  db/
-    schema/
-  lib/
-    auth/
-    finance/
-    permissions/
-    storage/
-    validation/
-  types/
+  components/   # reusable UI
+lib/            # domain/server utilities
+db/             # Drizzle client, schema, migration guards
+  schema/
+tests/
+e2e/
 ```
 
 ## 9. Development Workflow

@@ -202,6 +202,21 @@ Expected local URL:
 http://localhost:3000
 ```
 
+Validation commands:
+
+```bash
+npm run lint
+npm run typecheck
+npm run build
+```
+
+Migration commands (Drizzle Kit):
+
+```bash
+npm run db:generate   # generate SQL migration files from db/schema (offline)
+npm run db:migrate    # apply pending migrations from ./drizzle
+```
+
 ## 10. Database
 
 ```text
@@ -218,14 +233,27 @@ Drizzle is responsible for application/database migrations.
 
 Do not use direct Better Auth migration commands for the Drizzle-backed setup.
 
+Migration safety: `db:migrate` (and every other database-touching
+drizzle-kit command) refuses to run while `NEON_BRANCH=production` —
+develop on a Neon development branch (for example via `neon checkout`)
+and keep `.env` pointed at it. The `ALLOW_PRODUCTION_MIGRATIONS`
+override exists for reviewed, intentional production migrations only.
+
 ## 11. Environment Variables
 
+Copy `.env.example` to `.env` and fill in real values. The environment is
+validated at load time — missing or invalid variables fail with an
+explicit message naming them (see `lib/env.ts`).
+
 ```env
-DATABASE_URL=
+DATABASE_URL=             # generic Neon value (optional)
+DATABASE_URL_POOLED=      # app runtime (db/index.ts, lib/auth.ts)
+DATABASE_URL_UNPOOLED=    # drizzle-kit migrations (drizzle.config.ts)
+NEON_BRANCH=development   # migration gate refuses "production"
 BETTER_AUTH_SECRET=
 BETTER_AUTH_URL=http://localhost:3000
 
-# R2
+# R2 (later phases)
 R2_ACCOUNT_ID=
 R2_ACCESS_KEY_ID=
 R2_SECRET_ACCESS_KEY=
@@ -237,20 +265,20 @@ Never commit real values.
 
 ## 12. Project Structure
 
+`app/`, `src/`, and `lib/` are siblings at the project root:
+
 ```text
-src/
-├── app/
-├── actions/
-├── components/
-├── db/
+project-root/
+├── app/            # route orchestration (App Router)
+├── src/
+│   └── components/ # reusable UI
+├── lib/            # domain/server utilities (env, auth, validation)
+├── db/             # Drizzle client, schema, migration guards
 │   └── schema/
-├── lib/
-│   ├── auth/
-│   ├── finance/
-│   ├── permissions/
-│   ├── storage/
-│   └── validation/
-└── types/
+├── drizzle/        # generated SQL migrations
+├── tests/          # unit/integration tests
+├── e2e/            # end-to-end tests
+└── drizzle.config.ts
 ```
 
 ## 13. Documentation

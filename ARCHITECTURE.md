@@ -163,23 +163,23 @@ Do not use JavaScript floating-point arithmetic.
 ```text
 ┌──────────────────────────────────────────────┐
 │  UI                                          │
-│  src/app · src/components                    │
+│  app · src/components                        │
 │  rendering · interaction · a11y              │
 ├──────────────────────────────────────────────┤
 │  Actions / API                               │
-│  src/actions · src/app/api                   │
+│  app/api                                     │
 │  auth · validation · domain calls            │
 ├──────────────────────────────────────────────┤
 │  Domain                                      │
-│  src/lib/finance · src/lib/permissions       │
+│  lib/finance · lib/permissions               │
 │  business rules · calculations · workflows   │
 ├──────────────────────────────────────────────┤
 │  Persistence                                 │
-│  src/db                                      │
+│  db                                          │
 │  schema · migrations · queries · tx          │
 ├──────────────────────────────────────────────┤
 │  Storage                                     │
-│  src/lib/storage                             │
+│  lib/storage                                 │
 │  R2 upload · signed URLs · deletion          │
 └──────────────────────────────────────────────┘
 ```
