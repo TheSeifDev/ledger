@@ -8,11 +8,13 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test": "node --env-file-if-exists=.env --test tests/validations.test.ts tests/auth-integration.test.ts tests/routes.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:check": "node --env-file-if-exists=.env src/db/check-connection.mjs"
+    "db:check": "node --env-file-if-exists=.env src/db/check-connection.mjs",
+    "db:seed-user": "node --env-file-if-exists=.env src/db/seed-dev-user.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",

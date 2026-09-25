@@ -1,15 +1,22 @@
 import { betterAuth } from "better-auth";
-import { Pool } from "pg";
+import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 
+import { db } from "@/db";
 import { env } from "@/server/env";
-
-// Phase 0 wires configuration only: the Better Auth Drizzle adapter and
-// auth schema are Phase 1 work.
-const database = new Pool({ connectionString: env.DATABASE_URL });
+import * as schema from "@/db/schema";
 
 export const auth = betterAuth({
-  database,
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema,
+  }),
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
-  emailAndPassword: { enabled: true },
+  emailAndPassword: {
+    enabled: true,
+    // There is no public account creation path: users are pre-provisioned
+    // through the dev-only seeder (src/db/seed-dev-user.mjs). Better Auth
+    // rejects sign-up requests while this is set.
+    disableSignUp: true,
+  },
 });

@@ -614,6 +614,20 @@ npm run build
 
 If a script is not present, do not assume it exists.
 
+`npm test` runs the test files explicitly (Node's test runner executes
+them concurrently):
+
+```bash
+tests/validations.test.ts      # env + login-schema unit tests
+tests/auth-integration.test.ts # Better Auth semantics against the dev database
+tests/routes.test.ts           # real `next start` server: routes, redirects,
+                               # cookies, sign-in/sign-out over HTTP
+```
+
+The route tests spawn `next start`, so run `npm run build` before
+`npm test`. Each suite owns a distinct fixture user so concurrent
+suites cannot delete each other's rows.
+
 ---
 
 # 18. Database Development
@@ -642,7 +656,21 @@ npm run db:migrate    # apply pending migrations (blocked on production)
 npm run db:push       # sync schema without migration files (blocked on production)
 npm run db:studio     # open Drizzle Studio (blocked on production)
 npm run db:check      # read-only connectivity probe (select 1)
+npm run db:seed-user  # provision one dev user (blocked on production)
 ```
+
+There is no public account creation path. To provision a user on a
+development branch:
+
+```bash
+npm run db:seed-user -- --email you@example.com --password 'correct horse' --name 'You'
+```
+
+The seeder writes the rows Better Auth's own sign-up flow would create
+(`user` + credential `account`, hashed with the same `hashPassword`
+Better Auth verifies against). Re-running with the same email refreshes
+the name and password — the dev-only stand-in for the absent
+password-reset flow. It refuses while `NEON_BRANCH=production`.
 
 The migration safety gate in `drizzle.config.ts` refuses every
 database-touching drizzle-kit command while `NEON_BRANCH=production`.
@@ -754,10 +782,10 @@ Login UI/UX
     ✅ Complete
 
 Phase 0 — Foundation
-    ⏳ In progress
+    ✅ Complete
 
 Phase 1 — Authentication
-    ⏳ Not started
+    ✅ Complete
 
 Finance
     ⏳ Not started
@@ -769,8 +797,8 @@ Production
 The current implementation target is:
 
 ```text
-PHASE 0
-Foundation
+PHASE 2
+Tenancy + Authorization
 ```
 
 The first complete vertical product slice remains:
