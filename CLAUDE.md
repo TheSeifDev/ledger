@@ -51,7 +51,22 @@ DESIGN_SYSTEM.md   (when changing UI)
 
 Inspect existing implementation before creating replacements.
 
-## 3. Coding Rules
+## 3. Execution Environment
+
+Work directly in the current repository checkout.
+
+Do NOT create or switch to a Git worktree unless explicitly requested by the user.
+
+Do NOT move implementation into `.claude/worktrees/`.
+
+The current checkout is the source of truth for:
+
+- code changes
+- documentation changes
+- validation
+- phase reviews
+
+## 4. Coding Rules
 
 ```text
 ├── TypeScript strictness is expected
@@ -70,7 +85,7 @@ Inspect existing implementation before creating replacements.
 └── Keep functions focused and testable
 ```
 
-## 4. Financial Mutation Pattern
+## 5. Financial Mutation Pattern
 
 Every financial mutation follows:
 
@@ -98,7 +113,7 @@ Return safe result
 
 Approval/rejection is transactional. The mutation and its audit event commit or roll back together.
 
-## 5. Database Rules
+## 6. Database Rules
 
 ```text
 ├── Schema changes require Drizzle migrations
@@ -119,7 +134,7 @@ Every financial row still carries organization_id.
 No query proceeds without an organization scope.
 ```
 
-## 6. Auth Rules
+## 7. Auth Rules
 
 ```text
 Better Auth owns authentication
@@ -134,7 +149,7 @@ Role resolved server-side
 - Never accept a role from the client as authoritative.
 - A user can only access resources belonging to organizations/projects they are authorized to access.
 
-## 7. UI Rules
+## 8. UI Rules
 
 Use the existing design system. Do not invent a new visual language for individual screens.
 
@@ -149,7 +164,7 @@ Prioritize:
  6. visual polish
 ```
 
-## 8. Dependency Rules
+## 9. Dependency Rules
 
 Before adding a dependency, ask:
 
@@ -167,7 +182,7 @@ Only then: add the dependency
 
 Do not use `npm audit fix --force` automatically.
 
-## 9. Commands
+## 10. Commands
 
 Typical validation:
 
@@ -180,7 +195,7 @@ npm run build
 
 If a script does not exist, do not invent a replacement silently; inspect `package.json` first.
 
-## 10. Output Expectations
+## 11. Output Expectations
 
 When implementing a task:
 
@@ -190,3 +205,45 @@ When implementing a task:
 ├── mention validation performed
 └── explicitly mention unresolved risks or TODOs
 ```
+
+## 12. Phase Discipline
+
+The roadmap is executed one phase at a time.
+
+When a phase file is provided:
+
+```text
+Read current phase
+    ↓
+Inspect repository
+    ↓
+Implement only current phase
+    ↓
+Validate
+    ↓
+Report
+    ↓
+STOP
+```
+
+Do NOT automatically continue to the next phase.
+
+Do NOT interpret the existence of later-phase bugs as permission to implement later phases.
+
+If a later-phase issue is discovered:
+
+```text
+document it
+defer it
+continue current phase
+```
+
+unless it is a hard blocker for the current phase.
+
+## 13. Worktree Rule
+
+Do not create, switch to, or use Git worktrees during normal implementation.
+
+Only use a worktree when the user explicitly requests one.
+
+

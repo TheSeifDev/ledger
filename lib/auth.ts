@@ -1,12 +1,15 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
-const database = new Pool({
-  connectionString: "postgresql://postgres:password@localhost:5432/database",
-});
+import { env } from "@/server/env";
+
+// Phase 0 wires configuration only: the Better Auth Drizzle adapter and
+// auth schema are Phase 1 work.
+const database = new Pool({ connectionString: env.DATABASE_URL });
 
 export const auth = betterAuth({
-  database: database,
-  baseURL: "http://localhost:3000/",
+  database,
+  secret: env.BETTER_AUTH_SECRET,
+  baseURL: env.BETTER_AUTH_URL,
   emailAndPassword: { enabled: true },
 });

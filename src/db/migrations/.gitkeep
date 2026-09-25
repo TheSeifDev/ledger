@@ -1,0 +1,2 @@
+# Drizzle Kit writes generated migrations here (npm run db:generate).
+# Phase 0 ships no tables; the first migration arrives with Phase 1.

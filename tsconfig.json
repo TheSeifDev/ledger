@@ -19,7 +19,10 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@/db": ["./src/db/index.ts"],
+      "@/db/*": ["./src/db/*"],
+      "@/server/*": ["./src/server/*"]
     }
   },
   "include": [
