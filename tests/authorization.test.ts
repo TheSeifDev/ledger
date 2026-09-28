@@ -7,7 +7,6 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { after, before, describe, it } from "node:test";
 
-import pg from "pg";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { drizzle } from "drizzle-orm/node-postgres";
@@ -15,11 +14,26 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import { parseServerEnv } from "../lib/validations/env.ts";
 import { Permission, roleHasPermission, organizationPermissions, projectPermissions } from "../lib/permissions.ts";
 import * as schema from "../src/db/schema/index.ts";
+import {
+  closePool,
+  getPool,
+} from "./helpers.ts";
 
 const testEnv = parseServerEnv(process.env);
 
-const pool = new pg.Pool({ connectionString: testEnv.DATABASE_URL, max: 1 });
+const pool = getPool();
 const db = drizzle(pool, { schema });
+
+// Each DB-backed suite owns a distinct fixture identity. Node's test
+// runner executes the listed test files concurrently, so two suites
+// sharing one user would delete each other's rows in resetFixture()
+// mid-test — the other suite's session inserts would then violate the
+// user foreign key.
+const AUTHZ_FIXTURE = {
+  email: "phase2-authz-test@ledger.test",
+  password: "phase2-authz-password-2026",
+  name: "Phase 2 AuthZ Test User",
+} as const;
 
 type Fixture = {
   userId: string;
@@ -39,6 +53,8 @@ type ProjectFixture = OrgFixture & {
   projectMembershipId: string;
 };
 
+const createdUserEmails = new Set<string>();
+
 let authFixture: Fixture;
 
 async function resetAll() {
@@ -48,7 +64,11 @@ async function resetAll() {
   await pool.query(`delete from "organization_member"`);
   await pool.query(`delete from "project"`);
   await pool.query(`delete from "organization"`);
-  // Note: deliberately NOT deleting from "user" to avoid interfering with other test suites
+  // Clean up users created by this test suite
+  for (const email of createdUserEmails) {
+    await pool.query(`delete from "user" where email = $1`, [email]);
+  }
+  createdUserEmails.clear();
 }
 
 async function provisionUser(spec: { email: string; password: string; name: string }): Promise<Fixture> {
@@ -71,6 +91,7 @@ async function provisionUser(spec: { email: string; password: string; name: stri
     [randomUUID(), userId, hash],
   );
 
+  createdUserEmails.add(spec.email);
   return { userId, email: spec.email, password: spec.password, name: spec.name };
 }
 
@@ -242,15 +263,15 @@ before(async () => {
   await resetAll();
   
   authFixture = await provisionUser({
-    email: "phase2-auth-test@ledger.test",
-    password: "phase2-test-password-2026",
-    name: "Phase 2 Auth Test User",
+    email: AUTHZ_FIXTURE.email,
+    password: AUTHZ_FIXTURE.password,
+    name: AUTHZ_FIXTURE.name,
   });
 });
 
 after(async () => {
   await resetAll();
-  await pool.end();
+  await closePool();
 });
 
 describe("permission catalog", () => {
