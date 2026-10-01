@@ -15,6 +15,13 @@
       "when": 1790545636996,
       "tag": "0001_sparkling_miracleman",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790702599676,
+      "tag": "0002_overjoyed_the_initiative",
+      "breakpoints": true
     }
   ]
 }

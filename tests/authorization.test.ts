@@ -54,17 +54,22 @@ type ProjectFixture = OrgFixture & {
 };
 
 const createdUserEmails = new Set<string>();
+const createdOrganizationIds = new Set<string>();
 
 let authFixture: Fixture;
 
+/**
+ * Fixture-scoped cleanup. Test files run concurrently against the shared
+ * development database, so this suite deletes only what it created:
+ * removing its organizations cascades to their members/projects, removing
+ * its users cascades to their sessions/accounts. Other suites' fixtures
+ * are never touched.
+ */
 async function resetAll() {
-  await pool.query(`delete from "session"`);
-  await pool.query(`delete from "account"`);
-  await pool.query(`delete from "project_member"`);
-  await pool.query(`delete from "organization_member"`);
-  await pool.query(`delete from "project"`);
-  await pool.query(`delete from "organization"`);
-  // Clean up users created by this test suite
+  for (const organizationId of createdOrganizationIds) {
+    await pool.query(`delete from "organization" where id = $1`, [organizationId]);
+  }
+  createdOrganizationIds.clear();
   for (const email of createdUserEmails) {
     await pool.query(`delete from "user" where email = $1`, [email]);
   }
@@ -107,6 +112,7 @@ async function provisionOrganization(
      values ($1, $2, $3)`,
     [organizationId, `Org ${organizationId.slice(0, 8)}`, `org-${organizationId.slice(0, 8)}`],
   );
+  createdOrganizationIds.add(organizationId);
   
   await pool.query(
     `insert into "organization_member" (id, organization_id, user_id, role)
@@ -125,9 +131,9 @@ async function provisionProject(
   const projectMembershipId = randomUUID();
   
   await pool.query(
-    `insert into "project" (id, organization_id, name, slug)
-     values ($1, $2, $3, $4)`,
-    [projectId, organizationId, `Project ${projectId.slice(0, 8)}`, `proj-${projectId.slice(0, 8)}`],
+    `insert into "project" (id, organization_id, creator_id, name, slug, budget_minor_units, currency, status)
+     values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+    [projectId, organizationId, userId, `Project ${projectId.slice(0, 8)}`, `proj-${projectId.slice(0, 8)}`, 0n, "EGP", "ACTIVE"],
   );
   
   await pool.query(
@@ -609,6 +615,8 @@ describe("database constraints", () => {
     const orgId1 = randomUUID();
     const orgId2 = randomUUID();
     const slug = "unique-slug-test";
+    createdOrganizationIds.add(orgId1);
+    createdOrganizationIds.add(orgId2);
     
     await pool.query(
       `insert into "organization" (id, name, slug) values ($1, $2, $3)`,
@@ -654,14 +662,14 @@ describe("database constraints", () => {
     const slug = "unique-project-slug";
     
     await pool.query(
-      `insert into "project" (id, organization_id, name, slug) values ($1, $2, $3, $4)`,
-      [projectId1, organizationId, "Project 1", slug],
+      `insert into "project" (id, organization_id, creator_id, name, slug, budget_minor_units, currency, status) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [projectId1, organizationId, user.userId, "Project 1", slug, 0n, "EGP", "ACTIVE"],
     );
     
     await assert.rejects(
       pool.query(
-        `insert into "project" (id, organization_id, name, slug) values ($1, $2, $3, $4)`,
-        [projectId2, organizationId, "Project 2", slug],
+        `insert into "project" (id, organization_id, creator_id, name, slug, budget_minor_units, currency, status) values ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [projectId2, organizationId, user.userId, "Project 2", slug, 0n, "EGP", "ACTIVE"],
       ),
       /duplicate key value violates unique constraint.*project_org_slug_unique/,
     );

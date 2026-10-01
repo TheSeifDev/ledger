@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { logout } from "@/actions/auth";
 import {
@@ -25,7 +26,13 @@ export default async function DashboardPage() {
           <CardTitle>Signed in as {user.name}</CardTitle>
           <CardDescription>{user.email}</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-3">
+          <Link
+            href="/projects"
+            className="inline-flex h-10 w-full items-center justify-center rounded-full border border-border px-5 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+          >
+            Projects
+          </Link>
           <form action={logout}>
             <button
               type="submit"

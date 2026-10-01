@@ -1,7 +1,7 @@
 import "server-only";
 
 import { db } from "@/db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { organization, organizationMember, project, projectMember } from "@/db/schema";
 
 export async function findOrganizationById(id: string) {
@@ -41,6 +41,20 @@ export async function findProjectBySlug(organizationId: string, slug: string) {
   return db.query.project.findFirst({
     where: and(
       eq(project.organizationId, organizationId),
+      eq(project.slug, slug),
+    ),
+  });
+}
+
+/** Slugs are unique per organization only — resolve within the caller's orgs. */
+export async function findProjectsBySlugInOrganizations(
+  organizationIds: string[],
+  slug: string,
+) {
+  if (organizationIds.length === 0) return [];
+  return db.query.project.findMany({
+    where: and(
+      inArray(project.organizationId, organizationIds),
       eq(project.slug, slug),
     ),
   });
