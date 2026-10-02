@@ -15,6 +15,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { PaymentForm } from "@/components/projects/PaymentForm";
+import { WithdrawalForm } from "@/components/projects/WithdrawalForm";
 
 export const dynamic = "force-dynamic";
 
@@ -131,6 +132,19 @@ export default async function ProjectPage({
           </CardHeader>
           <CardContent>
             <PaymentForm projectSlug={project.slug} />
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Request withdrawal</CardTitle>
+            <CardDescription>
+              Request a withdrawal from {project.name}. It has no effect until a
+              head or owner approves it.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <WithdrawalForm projectSlug={project.slug} />
           </CardContent>
         </Card>
 

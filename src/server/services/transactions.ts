@@ -27,6 +27,10 @@ import {
   paymentSubmissionSchema,
   type PaymentSubmissionInput,
 } from "@/lib/validations/payments";
+import {
+  withdrawalSubmissionSchema,
+  type WithdrawalSubmissionInput,
+} from "@/lib/validations/withdrawals";
 import { toMinorUnits } from "@/lib/validations/project";
 import type { TransactionStatus, TransactionType } from "@/db/schema/transactions";
 
@@ -202,6 +206,28 @@ export async function submitPayment(
   const parsed = paymentSubmissionSchema.parse(input);
   return createPending(actorUserId, projectSlug, {
     type: "PAYMENT",
+    amount: parsed.amount,
+    paidTo: parsed.paidTo,
+    notes: parsed.notes,
+    idempotencyKey: parsed.idempotencyKey,
+  });
+}
+
+/**
+ * Phase 6: withdrawal submission. Creates exactly one unified transaction
+ * with type = WITHDRAWAL and status = PENDING; both are server-fixed facts
+ * here — no path accepts them from a client. A PENDING withdrawal has no
+ * approved financial impact; balances/aggregates change only after the
+ * approval phase.
+ */
+export async function submitWithdrawal(
+  actorUserId: string,
+  projectSlug: string,
+  input: WithdrawalSubmissionInput,
+) {
+  const parsed = withdrawalSubmissionSchema.parse(input);
+  return createPending(actorUserId, projectSlug, {
+    type: "WITHDRAWAL",
     amount: parsed.amount,
     paidTo: parsed.paidTo,
     notes: parsed.notes,
