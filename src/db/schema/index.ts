@@ -3,3 +3,4 @@
 // whatever this directory exports.
 export * from "./auth.ts";
 export * from "./tenancy.ts";
+export * from "./transactions.ts";

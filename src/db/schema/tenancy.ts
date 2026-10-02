@@ -94,6 +94,9 @@ export const project = pgTable(
   },
   (table) => [
     uniqueIndex("project_org_slug_unique").on(table.organizationId, table.slug),
+    // Composite unique target: lets the transaction table enforce
+    // organization/project consistency with a foreign key.
+    uniqueIndex("project_org_id_unique").on(table.organizationId, table.id),
     index("project_organization_id_idx").on(table.organizationId),
     index("project_creator_id_idx").on(table.creatorId),
   ],

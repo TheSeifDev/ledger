@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PaymentForm } from "@/components/projects/PaymentForm";
 
 export const dynamic = "force-dynamic";
 
@@ -119,6 +120,19 @@ export default async function ProjectPage({
             </CardHeader>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Submit payment</CardTitle>
+            <CardDescription>
+              Record a payment to {project.name}. It will appear once a head
+              or owner approves it.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <PaymentForm projectSlug={project.slug} />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader>
