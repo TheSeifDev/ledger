@@ -4,3 +4,4 @@
 export * from "./auth.ts";
 export * from "./tenancy.ts";
 export * from "./transactions.ts";
+export * from "./audit.ts";

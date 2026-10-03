@@ -16,6 +16,9 @@ import {
 } from "@/components/ui/card";
 import { PaymentForm } from "@/components/projects/PaymentForm";
 import { WithdrawalForm } from "@/components/projects/WithdrawalForm";
+import { ApprovalsQueue } from "@/components/projects/ApprovalsQueue";
+import { listPendingReviews } from "@/server/services/approvals";
+import { encodeTransactionCursor } from "@/lib/finance/transactions";
 
 export const dynamic = "force-dynamic";
 
@@ -43,10 +46,13 @@ export async function generateMetadata({
 
 export default async function ProjectPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ reviewCursor?: string }>;
 }) {
   const { slug } = await params;
+  const { reviewCursor } = await searchParams;
   const { user } = await requireSession();
 
   let access;
@@ -60,6 +66,11 @@ export default async function ProjectPage({
   const { project, membership, creator } = access;
   const { members } = await listProjectMembers(user.id, slug);
   const canManage = can({ role: membership.role }, Permission.PROJECT_MANAGE);
+
+  let pendingReviews: Awaited<ReturnType<typeof listPendingReviews>> | null = null;
+  if (canManage) {
+    pendingReviews = await listPendingReviews(user.id, slug, reviewCursor, 25);
+  }
 
   return (
     <main className="flex flex-1 flex-col items-center bg-background px-6 py-16 font-sans">
@@ -147,6 +158,42 @@ export default async function ProjectPage({
             <WithdrawalForm projectSlug={project.slug} />
           </CardContent>
         </Card>
+
+        {canManage && pendingReviews ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Pending review</CardTitle>
+              <CardDescription>
+                Payments and withdrawals waiting for a decision. You cannot
+                review your own submissions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ApprovalsQueue
+                projectSlug={project.slug}
+                rows={pendingReviews.rows.map((row) => ({
+                  id: row.transaction.id,
+                  type: row.transaction.type,
+                  amountMinorUnits: row.transaction.amountMinorUnits.toString(),
+                  currency: project.currency,
+                  paidTo: row.transaction.paidTo,
+                  notes: row.transaction.notes,
+                  createdAt: row.transaction.createdAt.toISOString(),
+                  creatorName: row.creatorName,
+                  creatorEmail: row.creatorEmail,
+                }))}
+                nextCursor={
+                  pendingReviews.nextCursor
+                    ? encodeTransactionCursor(
+                        pendingReviews.nextCursor.createdAt,
+                        pendingReviews.nextCursor.id,
+                      )
+                    : null
+                }
+              />
+            </CardContent>
+          </Card>
+        ) : null}
 
         <Card>
           <CardHeader>

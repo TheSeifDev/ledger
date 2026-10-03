@@ -32,3 +32,10 @@ export type {
   ListTransactionsPage,
   TransactionRow,
 } from "./transactions";
+export {
+  transitionTransactionIfPending,
+  listPendingTransactions,
+} from "./approvals";
+export type { DecisionInput } from "./approvals";
+export { insertAuditEvent } from "./audits";
+export type { AuditEventInput } from "./audits";
